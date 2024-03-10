@@ -16,6 +16,8 @@ import nltk
 import math
 import re
 import os
+nltk.download('all')
+
 
 app = Flask(__name__)
 
