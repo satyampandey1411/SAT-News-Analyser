@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SAT News Analyser</title>
+<link rel="icon" href="/static/fevicon.png" type="image/x-icon"> <!-- Add this line for favicon -->
+<style>
+  body {
+    font-family: Arial, sans-serif;
+    background-color: #f1f1f1;
+    margin: 0;
+    padding: 0;
+  }
+  .search-container {
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    background-image: url('/static/a.jpeg');
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0 20px;
+    box-sizing: border-box;
+    flex-direction: column; /* Added */
+  }
+  .title-container {
+    position: absolute;
+    top: 20px;
+    display: flex; /* Added */
+    justify-content: center; /* Added */
+    width: 100%; /* Added */
+  }
+  .title {
+    color: rgb(255, 0, 21);
+    font-size: 4rem;
+    text-align: center; /* Center align text */
+    text-shadow: 4px 4px 6px rgba(0, 0, 0, 0.8); /* Increased text shadow */
+  }
+  .search-input-container {
+    position: relative;
+    width: 50%;
+    max-width: 500px; /* Set maximum width */
+  }
+  .search-input {
+    width: calc(100% - 60px); /* Adjust width to leave space for the search icon */
+    padding: 15px 15px 15px 20px; /* Adjust padding for the search icon */
+    border: none;
+    border-radius: 30px;
+    box-sizing: border-box;
+    font-size: 1rem;
+    background-color: rgba(255, 255, 255, 0.7);
+    background-image: linear-gradient(to right, #e96443, #904e95); /* Gradient background */
+    outline: none;
+    transition: background-color 0.3s ease;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2); /* Increased box shadow */
+    color: white; /* Text color */
+    overflow: hidden; /* Hide overflow */
+    text-overflow: ellipsis; /* Show ellipsis for overflow text */
+    white-space: nowrap; /* Prevent wrapping */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Added text shadow */
+  }
+  .search-input::placeholder {
+    color: rgba(255, 255, 255, 0.9); /* Placeholder color */
+  }
+  .search-icon {
+    position: absolute;
+    top: 50%;
+    right: 20px; /* Adjust position */
+    transform: translateY(-50%);
+    color: rgb(252, 154, 154); /* Icon color */
+    cursor: pointer;
+    transition: color 0.3s ease;
+    font-size: 1.8rem;
+  }
+  .search-icon:hover {
+    color: #f85b00; /* Icon hover color */
+  }
+  /* Button styles */
+  .button {
+    position: absolute;
+    top: 20px;
+    border: none;
+    border-radius: 30px;
+    padding: 10px 20px;
+    background: linear-gradient(to right, #e96443, #904e95); /* Gradient background */
+    color: white;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2); /* Increased box shadow */
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Added text shadow */
+  }
+  .button:hover {
+    background: linear-gradient(to right, #f85b00, #e53935); /* Gradient hover background */
+  }
+  .button-left {
+    left: 20px;
+  }
+  .button-right {
+    right: 20px;
+  }
+</style>
+</head>
+<body>
+<div class="search-container">
+  <div class="title-container">
+    <div class="title"><strong>Welcome to<br> SAT News Analyser</strong></div>
+  </div>
+  <a href="/developer"><button class="button button-left">Developer</button></a>
+  <a href="/login"><button class="button button-right">History</button></a>
+  <!-- <button class="button button-right">History</button> -->
+  <div class="search-input-container">
+    <form id="search-form" method="POST" action="/extract_text">
+      <input type="text" class="search-input" name="url" placeholder="Write or paste your URL">
+      <i class="search-icon" id="search-icon">&#128269;</i>
+      <!-- <button type="submit">Extract Text</button> -->
+    </form>
+  </div>
+</div>
+{% if cleaned_text %}
+<div class="cleaned-text">
+    {{ cleaned_text | safe }}
+</div>
+<form action="/table">
+    <input type="hidden" name="sentence_count" value="{{ sentence_count }}">
+    <input type="hidden" name="word_count" value="{{ word_count }}">
+    <input type="hidden" name="stop_word_count" value="{{ stop_word_count }}">
+    <!-- <input type="hidden" name="upos_frequency" value="{{ upos_frequency }}"> -->
+    <button type="submit">View Table</button>
+</form>
+{% endif %}
+
+<script>
+document.getElementById('search-icon').addEventListener('click', function() {
+  document.getElementById('search-form').submit();
+});
+
+// Clear the input field when the page is loaded or shown from cache
+window.addEventListener('load', function() {
+  clearInput();
+});
+
+window.addEventListener('pageshow', function(event) {
+  if (event.persisted || (window.performance && window.performance.navigation.type === 2)) {
+    clearInput();
+  }
+});
+
+function clearInput() {
+  document.querySelector('.search-input').value = '';
+}
+</script>
+</body>
+</html>
+

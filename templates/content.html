@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Content</title>
+<link rel="icon" href="/static/fevicon.png" type="image/x-icon"> <!-- Add this line for favicon -->
+<style>
+        /* CSS for footer */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to right, #e96443, #904e95); /* Gradient background */
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+    
+        /* CSS for cleaned text */
+        .cleaned-text {
+            line-height: 2.0;
+            text-align: justify;
+            max-width: 80%; /* Increased max-width */
+            margin: auto;
+            background: linear-gradient(to right, #4378e9, #614e95); /* Gradient background */
+            padding: 20px; /* Padding for inner content */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Box shadow for 3D effect */
+            color: white; /* Text color */
+            overflow: hidden; /* Hide scrollbar */
+        }
+
+        /* Paragraph CSS */
+        .cleaned-text p {
+            margin-bottom: 1em;
+            text-align: center; /* Center align the paragraph */
+        }
+        
+        /* CSS for the box */
+        .box {
+            margin: 20px 10px; /* Decreased margin on both sides */
+            background: linear-gradient(to right, #4378e9, #614e95); /* Gradient background */
+            border: 1px solid rgba(255, 255, 255, 0.3); /* Border color with transparency */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Box shadow for 3D effect */
+            overflow-y: auto; /* Add vertical scroll if content exceeds box height */
+            color: white; /* Text color */
+        }
+    
+        /* CSS for speech button */
+        .speech-button {
+            position: fixed;
+            top: 20px;
+            right: 10px;
+            padding: 10px 20px;
+            background: linear-gradient(to right, #e96443, #904e95); /* Gradient background */
+            color: white;
+            border: none;
+            border-radius: 30px; /* Match border radius */
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2); /* Increased box shadow */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Added text shadow */
+            z-index: 1; /* Ensure button is above other content */
+        }
+    
+        .speech-button:hover {
+            background: linear-gradient(to right, #f85b00, #e53935); /* Gradient hover background */
+        }
+    
+        /* CSS for view table button */
+        .view-table-button {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            padding: 10px 20px;
+            background: linear-gradient(to right, #e96443, #904e95); /* Gradient background */
+            color: white;
+            border: none;
+            border-radius: 30px; /* Match border radius */
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2); /* Increased box shadow */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Added text shadow */
+            z-index: 1; /* Ensure button is above other content */
+        }
+    
+        .view-table-button:hover {
+            background: linear-gradient(to right, #f85b00, #e53935); /* Gradient hover background */
+        }
+
+        /* Adjust the position of the Home Page button */
+        .home-button {
+            position: fixed;
+            top: 10px;
+            left: 50%; /* Center the button horizontally */
+            transform: translateX(-50%); /* Move the button to the left by half of its width */
+            padding: 10px 20px;
+            background: linear-gradient(to right, #e96443, #904e95); /* Gradient background */
+            color: white;
+            border: none;
+            border-radius: 30px; /* Match border radius */
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 4px 4px 8px rgba(0, 0, 0, 0.2); /* Increased box shadow */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Added text shadow */
+            z-index: 1; /* Ensure button is above other content */
+        }
+
+        .home-button:hover {
+            background: linear-gradient(to right, #f85b00, #e53935); /* Gradient hover background */
+        }
+
+        /* New CSS for body */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to right, #4378e9, #614e95);
+            /* Change these color codes to your desired gradient */
+            color: white;
+        }
+        
+        /* CSS for headline */
+        .headline {
+            margin-top: 50px; /* Adjust the margin to create space between headline and buttons */
+            text-align: center;
+        }
+
+        /* Make the body scrollable */
+        .body-container {
+            flex: 1; /* Grow to fill remaining space */
+            overflow-y: auto; /* Enable vertical scrolling */
+            width: 100%; /* Ensure full width */
+        }
+    </style>
+    
+    <title>Document</title>
+</head>
+<body>
+
+    <div class="body-container">
+        {% if headlines %}
+            <h2 class="headline">{{ headlines }}</h2>
+        {% endif %}
+
+        {% if cleaned_text %}
+            <div class="cleaned-text">
+                {{ cleaned_text | safe }}
+            </div>
+        {% endif %}
+    </div>
+
+    <form id="view-table-form" action="/table" method="GET">
+    </form>
+
+    <div class="footer">
+        &copy; 2024 SAT News Analyser
+    </div>
+
+    <button class="speech-button">🔊</button>
+    <button class="view-table-button" onclick="location.href='/table'">Detailed Analysis</button>
+    <button class="home-button" onclick="location.href='/'">Home Page</button>
+    
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Check if Speech Synthesis is supported
+            if ('speechSynthesis' in window) {
+                var isSpeaking = false;
+                var speechSynth = window.speechSynthesis;
+                var speechText = document.querySelector('.cleaned-text').innerText;
+    
+                console.log("Speech text:", speechText); // Check if speechText contains the expected content
+    
+                function toggleSpeech() {
+                    console.log("Toggle speech called."); // Check if the function is being called
+                    if (!isSpeaking) {
+                        var speechUtterance = new SpeechSynthesisUtterance(speechText);
+                        speechUtterance.rate = 2.5; // Change the rate to 1.5 (example value)
+                        speechSynth.speak(speechUtterance);
+                        isSpeaking = true;
+                        console.log("Speaking...");
+                    } else {
+                        speechSynth.cancel();
+                        isSpeaking = false;
+                        console.log("Stopped speaking.");
+                    }
+                }
+    
+                document.querySelector('.speech-button').addEventListener('click', toggleSpeech);
+            } else {
+                // Speech Synthesis not supported, handle accordingly
+                console.log("Speech Synthesis is not supported in this browser.");
+            }
+        });
+    </script>
+    
+    
+</body>
+</html>

@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Developer</title>
+<link rel="icon" href="/static/fevicon.png" type="image/x-icon"> <!-- Add this line for favicon -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(to right, #e943db, #4e9395);
+        overflow: hidden; /* Remove scroll bar */
+    }
+    #container {
+        display: flex;
+        flex-direction: column;
+        min-height: 100vh;
+    }
+    header {
+        background-color: linear-gradient(to right, #e943db, #4e9395); /* Set header background color to match page background color */
+        padding: 0px;
+    }
+    #content {
+        padding: 20px;
+        position: relative;
+        color: #000; /* Set text color to black */
+        text-align: center; /* Center-align text */
+    }
+    #circular-image {
+        width: 300px; /* Increase image size */
+        height: 300px; /* Increase image size */
+        border-radius: 50%;
+        overflow: hidden;
+        display: inline-block;
+        margin-right: 20px;
+        background-color: #fff; /* Set background color to white */
+    }
+    #circular-image img {
+        width: 100%;
+        height: auto;
+    }
+    .content-text {
+        display: inline-block;
+        vertical-align: top;
+        text-align: left;
+        font-size: 18px; /* Increase font size */
+    }
+    footer {
+        background: linear-gradient(to right, #e96443, #904e95);
+        color: #fff;
+        padding: 20px;
+        text-align: center;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        width: 100%;
+    }
+    .social-icon {
+        margin: 0 10px;
+        color: #fff;
+        font-size: 24px;
+        text-decoration: none;
+    }
+    /* 3D text effect */
+    .header-text {
+        font-weight: bold;
+        font-size: 32px;
+        color: red;
+        text-shadow: 2px 2px #000;
+        margin-bottom: 20px; /* Add space after text */
+    }
+</style>
+</head>
+<body>
+<div id="container">
+    <header>
+        <div id="content">
+            <div class="header-text">Satyam Kumar Pandey</div>
+            <div id="circular-image">
+                <img src="/static/myself.jpg" alt="Circular Image">
+            </div>
+            <div class="content-text">
+                <p>As a dedicated computer science student at Sitare University, I am deeply committed to leveraging technology as a tool for innovative problem-solving. I am proficient in Python, HTML, CSS, and well-versed in data cleaning concepts. With a strong foundation built during my time at Navodayan (JNV Chitrakoot) and further honed as a Dakshana Scholar at Dakshana Valley, I am now embarking on my B.Tech journey. I am eager to immerse myself in the world of software development and data science, applying these skills to tackle real-world challenges head-on. My ultimate goal is to apply these skills to tackle real-world challenges head-on.</p>
+            </div>
+        </div>
+    </header>
+    <footer>
+        <a href="https://www.facebook.com/profile.php?id=100048933551358" class="social-icon"><i class="fab fa-facebook"></i> Facebook</a>
+        <a href="https://twitter.com/Pandey_Sat_yam" class="social-icon"><i class="fab fa-twitter"></i> Twitter</a>
+        <a href="https://www.instagram.com/satyam_kumar_pandey_/" class="social-icon"><i class="fab fa-instagram"></i> Instagram</a>
+        <a href="www.linkedin.com/in/satyam1411pandey" class="social-icon"><i class="fab fa-linkedin"></i> LinkedIn</a>
+    </footer>
+</div>
+</body>
+</html>

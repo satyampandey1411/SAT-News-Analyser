@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Detailed Analysis</title>
+<link rel="icon" href="/static/fevicon.png" type="image/x-icon"> <!-- Add this line for favicon -->
+<style>
+        body {
+            margin: 0; /* Reset margin */
+            background: linear-gradient(to right, #4378e9, #614e95); /* Gradient background */
+            font-family: Arial, sans-serif; /* Font family */
+            color: white;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh; /* Ensure the body takes at least the full height of the viewport */
+        }
+
+        .header {
+            background: linear-gradient(to right, #f85b00, #e53935); /* Gradient background */
+            color: white;
+            padding: 25px 0;
+            text-align: center;
+            width: 100%;
+            position: fixed; /* Fixed positioning */
+            top: 0; /* Align to the top of the viewport */
+            left: 0; /* Align to the left of the viewport */
+            z-index: 999; /* Ensure the header is above other elements */
+        }
+
+        .home-button {
+            position: absolute; /* Absolute positioning */
+            top: 10px; /* Align 10px from the top */
+            left: 10px; /* Align 10px from the left */
+        }
+
+        .container {
+            margin-top: 60px; /* Adjust margin to account for header */
+            width: 80%; /* Set width of the container */
+            background: linear-gradient(to right, #e943db, #4e9395); /* Gradient background */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); /* Add box shadow for 3D effect */
+            padding: 20px; /* Add padding */
+            margin: 20px auto; /* Center the container vertically and horizontally */
+            color: black; /* Set font color to black */
+            line-height: 1.5; /* Increase line height */
+            overflow-y: auto; /* Enable vertical scrolling if needed */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border: 1px solid #ddd;
+        }
+
+        th {
+            background-color: #f2f2f2;
+        }
+
+        h2 {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        /* Style for buttons */
+        .button {
+            padding: 12px 24px;
+            background: linear-gradient(to right, #e96443, #904e95); /* Gradient background */
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            margin: 0 10px; /* Add margin to separate buttons */
+        }
+
+        .button:hover {
+            background: linear-gradient(to right, #f85b00, #e53935); /* Gradient hover background */
+        }
+
+        /* Style for footer */
+        .footer {
+            background: linear-gradient(to right, #f85b00, #e53935); /* Gradient background */
+            color: white;
+            padding: 15px 0;
+            text-align: center;
+            border-top-left-radius: 10px;
+            border-top-right-radius: 10px;
+            width: 100%;
+            position: fixed; /* Fixed positioning */
+            bottom: 0; /* Align to the bottom of the viewport */
+            left: 0; /* Align to the left of the viewport */
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header">
+        <button class="button home-button" onclick="location.href='/'">Home Page</button>
+        <div style="font-size: 24px;"></div>
+    </div>
+
+    <div class="container">
+        <h2>Detailed Analysis</h2>
+        <!-- Display headline -->
+        <h3 style="text-align: center;">{{ headlines }}</h3>
+
+        <!-- Display cleaned text -->
+        <div>{{ cleaned_text }}</div>
+
+        <!-- Display other details in a table -->
+        <table border="1">
+            <tr>
+                <th style="background: linear-gradient(to right, #f85b00, #e53935); color: black;">Attribute</th>
+                <th style="background: linear-gradient(to right, #f85b00, #e53935); color: black; text-align: center;">Value</th>
+            </tr>
+            
+            
+
+            <tr>
+                <td>Number of Sentence</td>
+                <td>{{ sentence_count }}</td>
+            </tr>
+            <tr>
+                <td>Number of Words</td>
+                <td>{{ word_count }}</td>
+            </tr>
+            <tr>
+                <td>Number of Links</td>
+                <td>{{ link_count }}</td>
+            </tr>
+            <tr>
+                <td>Tone/Sentiment</td>
+                <td>{{ tone_sentiment }}</td>
+            </tr>
+            <tr>
+                <td>Genre</td>
+                <td>{{ genre }}</td>
+            </tr>
+            <tr>
+                <td>News Agency</td>
+                <td>{{ news_agency }}</td>
+            </tr>
+            <tr>
+                <td>Publish Date & Time</td>
+                <td>{{ publish_date }}</td>
+            </tr>
+            <tr>
+                <td>Reading Time</td>
+                <td>{{ reading_time }}</td>
+            </tr>
+            <tr>
+                <td>Read Date & Time</td>
+                <td>{{ date_time_read }}</td>
+            </tr>
+            <tr>
+                <td>POS Tags Frequency</td>
+                <td>{{ upos_frequency }}</td>
+            </tr>
+            <tr>
+                <td>Keywords</td>
+                <td>{{ keywords }}</td>
+            </tr>
+            <tr>
+                <td>URL</td>
+                <td>{{ url }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        &copy; 2024 SAT News Analyser
+    </div>
+</body>
+</html>

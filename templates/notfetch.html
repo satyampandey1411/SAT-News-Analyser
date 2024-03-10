@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Unable to Retrieve News Article</title>
+<link rel="icon" href="/static/fevicon.png" type="image/x-icon"> <!-- Add this line for favicon -->
+<style>
+        html, body {
+            margin: 0;
+            padding: 0;
+            height: 100%;
+            overflow: hidden; /* Remove scrollable bar */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: linear-gradient(to right, #e943db, #4e9395);
+            padding: 20px;
+            position: relative; /* Set body position to relative */
+        }
+
+        .container {
+            max-width: 600px;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center; /* Center align all text */
+        }
+
+        h1 {
+            color: #ff6347;
+        }
+
+        p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        a {
+            color: #007bff;
+            text-decoration: none;
+        }
+
+        a:hover {
+            text-decoration: underline;
+        }
+
+        footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to right, #e96443, #904e95); /* Footer color gradient */
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        .button {
+            position: absolute; /* Set button position to absolute */
+            top: 10px; /* Align button 10px from the top */
+            left: 10px; /* Align button 10px from the left */
+            padding: 12px 24px;
+            background: linear-gradient(to right, #e96443, #904e95); /* Gradient background */
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .button:hover {
+            background: linear-gradient(to right, #f85b00, #e53935); /* Button hover color gradient */
+        }
+    </style>
+</head>
+<body>
+    <button class="button home-button" onclick="location.href='/'">Home Page</button>
+    <div class="container">
+        <h1>Apologies, but we're unable to retrieve the news article at the moment.</h1>
+        <p>We apologize for any inconvenience this may cause. Please try again later, or feel free to explore other articles on our platform. Thank you for your understanding!</p>
+    </div>
+    <footer>&copy; 2024 SAT News Analyser</footer>
+</body>
+</html>

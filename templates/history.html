@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>History</title>
+<link rel="icon" href="/static/fevicon.png" type="image/x-icon"> <!-- Add this line for favicon -->
+<style>
+        /* CSS for table */
+        table {
+            width: 100%;
+            margin: auto;
+            border-collapse: collapse;
+            background: linear-gradient(to right, #4378e9, #614e95); /* Gradient background */
+            border-radius: 10px; /* Rounded corners */
+            overflow: hidden; /* Hide overflow */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Box shadow for 3D effect */
+        }
+
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border: 1px solid #ddd;
+            color: white; /* Text color */
+        }
+
+        th {
+            background-color: #e96443; /* Background color */
+        }
+
+        th strong {
+            font-weight: bold; /* Bold text for table attributes */
+        }
+
+        /* Center align the heading */
+        h2 {
+            text-align: center;
+            margin: 0; /* Remove default margin */
+        }
+
+        /* CSS for Home Page, Log Out, and View Details buttons */
+        .home-button, .logout-button, .details-button {
+            padding: 8px 20px;
+            background: linear-gradient(to right, #e96443, #904e95); /* Match the linear gradient of the view button */
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .home-button:hover, .logout-button:hover, .details-button:hover {
+            background: linear-gradient(to right, #f85b00, #e53935); /* Darker shade on hover */
+        }
+
+        /* CSS for footer */
+        .footer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to right, #e96443, #904e95); /* Match the linear gradient of the view button */
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+
+        /* Flexbox container for header */
+        .header-container {
+            display: flex;
+            justify-content: space-between; /* Align items at the beginning and end of container */
+            align-items: center; /* Center vertically */
+            padding: 10px 20px; /* Adjust padding for spacing */
+            position: relative; /* Make position relative for absolute positioning */
+        }
+
+        /* CSS for Log Out button */
+        .logout-button {
+            background: linear-gradient(to right, #e96443, #904e95); /* Match the linear gradient of the view button */
+            color: white;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            position: absolute; /* Position absolute for top right corner */
+            top: 10px; /* Adjust top position */
+            right: 20px; /* Adjust right position */
+        }
+
+        .logout-button:hover {
+            background: linear-gradient(to right, #f85b00, #e53935); /* Darker shade on hover */
+        }
+
+        /* Center align the History title */
+        .header-container h2 {
+            margin: 0 auto; /* Center horizontally */
+        }
+
+        /* Make the body scrollable */
+        body {
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <!-- Container for Home Page button and History title -->
+    <div class="header-container">
+        <!-- Log Out button -->
+        <button class="logout-button" onclick="location.href='/logout'">Log Out</button>
+        
+        <!-- Home Page button -->
+        <button class="home-button" onclick="location.href='/'">Home Page</button>
+
+        <!-- History title -->
+        <h2>History</h2>
+    </div>
+
+    <table>
+        <tr>
+            <th><strong>URL</strong></th>
+            <th><strong>Read Date & Time</strong></th>
+            <th><strong>News Agency</strong></th>
+            <th><strong>Publish Date & Time</strong></th>
+            <th><strong>All Details</strong></th>
+        </tr>
+        {% for record in records %}
+        <tr>
+            <td>{{ record[0] }}</td>
+            <td>{{ record[1] }}</td>
+            <td>{{ record[2] }}</td>
+            <td>{{ record[3] }}</td>
+            <!-- Add button for each row -->
+            <td><button class="details-button" onclick="location.href='/details?url={{ record[0] }}&date_time_read={{ record[1] }}'">View Details</button></td>
+        </tr>
+        {% endfor %}
+    </table>
+    <div class="footer">
+        &copy; 2024 SAT News Analyser
+    </div>
+</body>
+</html>
