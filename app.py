@@ -185,19 +185,26 @@ def extract_and_clean_text(url):
 
     # Parsing HTML content using BeautifulSoup
     soup = BeautifulSoup(response.text, 'html.parser')
+#-----------------------------------------------------
+    # Check if the URL starts with "https://www.india"
+    if url.startswith("https://www.india"):
+        cleaned_text = extract_indian_text(url)
+    # Check if the URL starts with "https://indianexpress"
+    if url.startswith("https://indianexpress"):
+        cleaned_text = extract_indian_express_text(url)
+    else:
+        # Find all elements with class="_s30J clearfix"
+        elements = soup.find_all(class_="_s30J clearfix")
 
-    # Find all elements with class="_s30J clearfix"
-    elements = soup.find_all(class_="_s30J clearfix")
-
-    # Extracting text from elements
-    for element in elements:
-        # Extract text
-        text = ''.join([e for e in element.recursiveChildGenerator() if isinstance(e, str)])
-        
-        # Clean the text
-        text = clean_text(text)
-        
-        cleaned_text += text.strip() + '\n'
+        # Extracting text from elements
+        for element in elements:
+            # Extract text
+            text = ''.join([e for e in element.recursiveChildGenerator() if isinstance(e, str)])
+            
+            # Clean the text
+            text = clean_text(text)
+            
+            cleaned_text += text.strip() + '\n'
 
     # Counting sentences and words
     sentence_count = len(nltk.sent_tokenize(cleaned_text))
@@ -226,9 +233,13 @@ def extract_and_clean_text(url):
     title = article.title
     
     # Extract genre of news
-    description = article.meta_data.get('og', {}).get('description', '')
-    match = re.search(r'^(.*?):', description)
-    genre = match.group(1).strip() if match else ""
+        # Check if the URL starts with "https://www.india"
+    if url.startswith("https://www.india"):
+        genre = extract_indian_genre(url)
+    else:
+        description = article.meta_data.get('og', {}).get('description', '')
+        match = re.search(r'^(.*?):', description)
+        genre = match.group(1).strip() if match else ""
 
     # Extract news agency
     news_agency = article.meta_data.get('og', {}).get('site_name', "")
@@ -251,13 +262,19 @@ def extract_and_clean_text(url):
         if not link['href'].startswith('#') and not link['href'].startswith('http://redirect.website.com'):
             link_count += 1
 
-    # Find the element with class "HNMDR"
-    heading_element = soup.find(class_="HNMDR")
-    # Extract heading text if found
-    if heading_element:
-        headlines = clean_text(heading_element.text)
-    else:
-        headlines = "Headline not found"
+    if url.startswith("https://www.india"):
+        headlines = extract_indian_headline(url)
+    # Check if the URL starts with "https://indianexpress"
+    if url.startswith("https://indianexpress"):
+        headlines = extract_indian_express_headline(url)
+    else:  
+        # Find the element with class "HNMDR"
+        heading_element = soup.find(class_="HNMDR")
+        # Extract heading text if found
+        if heading_element:
+            headlines = clean_text(heading_element.text)
+        else:
+            headlines = "Headline not found"
 
     # Initialize VADER sentiment analyzer
     sid = SentimentIntensityAnalyzer()
@@ -290,6 +307,118 @@ def extract_and_clean_text(url):
     return cleaned_text, sentence_count, word_count, link_count, upos_frequency, \
            headlines, ", ".join(keywords), tone_sentiment, \
            genre, news_agency, publish_date, reading_time, date_time_read
+
+def extract_indian_text(url):
+    cleaned_text = ""
+
+    # Check if the URL starts with "https://www.india"
+    if url.startswith("https://www.india"):
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Find the main content section by its class
+        main_content = soup.find(class_="Story_description__fq_4S")
+
+        # Find all <p> tags within the main content section
+        paragraphs = main_content.find_all('p')
+
+        # Extract text from each <p> tag and append it to cleaned_text
+        for p in paragraphs:
+            text = p.get_text(strip=True)
+            if "Published By" in text:
+                break  # Stop appending text once "Published By" section is encountered
+            cleaned_text += text + '\n'
+
+    return cleaned_text.strip()
+
+def extract_indian_headline(url):
+    headlines = ""
+
+    # Check if the URL starts with "https://www.india"
+    if url.startswith("https://www.india"):
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Find the element with the specified class for Indian news websites
+        headline_element = soup.find(class_="jsx-ace90f4eca22afc7 Story_strytitle__MYXmR")
+
+        # Extract the text from the headline element
+        headlines = headline_element.get_text(strip=True) if headline_element else "Headline not found"
+
+    return headlines
+
+
+
+def extract_indian_genre(url):
+    genre = "Not Found"
+    article = Article(url)
+    article.download()
+    article.parse()
+    article.nlp()
+    keywords = article.keywords
+    # Check if the URL starts with "https://www.india"
+    if url.startswith("https://www.india"):
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Find all <li> tags with the specified class for Indian news websites
+        li_tags = soup.find_all('li', class_="jsx-45032f3fea125779")
+
+        genre_list = []
+
+        # Iterate over each <li> tag
+        for li_tag in li_tags:
+            # Find the <a> tag within the <li> tag
+            a_tag = li_tag.find('a', class_="jsx-45032f3fea125779")
+            # Check if the <a> tag has a 'title' attribute
+            if a_tag and a_tag.get('title'):
+                # Extract the value of the 'title' attribute
+                title = a_tag['title']
+                # Append the title to the list
+                genre_list.append(title)
+
+        # Match the genre with the keyword list
+        for keyword in keywords:
+            if keyword in genre_list:
+                genre = keyword
+                break
+
+    return genre
+
+
+def extract_indian_express_text(url):
+    cleaned_text = ""
+
+    # Check if the URL starts with "https://indianexpress"
+    if url.startswith("https://indianexpress"):
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Find all elements with class="story_details"
+        story_details_elements = soup.find_all(class_="story_details")
+
+        # Extract text from each element and append it to cleaned_text
+        for element in story_details_elements:
+            cleaned_text += element.get_text(strip=True) + "\n"
+
+    return cleaned_text
+
+
+def extract_indian_express_headline(url):
+    headlines = "Headline not found"
+
+    # Check if the URL starts with "https://indianexpress"
+    if url.startswith("https://indianexpress"):
+        response = requests.get(url)
+        soup = BeautifulSoup(response.text, 'html.parser')
+
+        # Find the element with class="native_story_title"
+        headline_element = soup.find(class_="native_story_title")
+
+        # Extract the text from the headline element
+        headlines = headline_element.get_text(strip=True) if headline_element else "Headline not found"
+
+    return headlines
 
 @app.route("/", methods=('POST','GET'))
 def portal():
