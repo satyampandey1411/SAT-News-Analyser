@@ -40,7 +40,7 @@ cursor = connection.cursor()
 # Function to create the table in PostgreSQL
 def create_table():
     create_table_query = '''
-    CREATE TABLE IF NOT EXISTS news_analysis (
+    CREATE TABLE IF NOT EXISTS news_analyser (
         id SERIAL PRIMARY KEY,
         url TEXT,
         cleaned_text TEXT,
@@ -147,7 +147,7 @@ def insert_data(url, cleaned_text, sentence_count, word_count, link_count, upos_
                 reading_time, date_time_read, image_url="Not found"):
         if cleaned_text != "Not found":  # Check if cleaned_text is not "Not found"
             insert_query = '''
-            INSERT INTO news_analysis (url, cleaned_text, sentence_count, word_count, link_count,
+            INSERT INTO news_analyser (url, cleaned_text, sentence_count, word_count, link_count,
                                         upos_frequency, headlines, keywords, tone_sentiment, genre,
                                         news_agency, publish_date, reading_time, date_time_read, image_url)
             VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
@@ -497,7 +497,7 @@ def extract_text():
 @app.route("/table", methods=['GET'])
 def table_view():
     # Fetch data from the PostgreSQL table
-    cursor.execute("SELECT * FROM news_analysis ORDER BY id DESC LIMIT 1")
+    cursor.execute("SELECT * FROM news_analyser ORDER BY id DESC LIMIT 1")
     data = cursor.fetchone()  # Assuming you have only one row for now
 
     # Extracting data from the fetched row
@@ -537,7 +537,7 @@ def table_view():
 @app.route("/history")
 def history():
     # Fetch URL, sentence count, word count, and stop word count from the news_analysis table
-    cursor.execute("SELECT url, date_time_read, news_agency, publish_date FROM news_analysis ORDER BY id DESC")
+    cursor.execute("SELECT url, date_time_read, news_agency, publish_date FROM news_analyser ORDER BY id DESC")
     records = cursor.fetchall()
 
     return render_template("history.html", records=records)
@@ -553,7 +553,7 @@ def view_details():
     date_time_read = request.args.get('date_time_read')
     
     # Fetch all details for the provided URL and date_time_read
-    cursor.execute("SELECT * FROM news_analysis WHERE url = %s AND date_time_read = %s", (url, date_time_read,))
+    cursor.execute("SELECT * FROM news_analyser WHERE url = %s AND date_time_read = %s", (url, date_time_read,))
     details = cursor.fetchone()
 
     return render_template("details.html", details=details)
