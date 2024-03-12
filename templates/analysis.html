@@ -96,6 +96,17 @@
             bottom: 0; /* Align to the bottom of the viewport */
             left: 0; /* Align to the left of the viewport */
         }
+
+        /* CSS for image */
+        .article-image {
+            margin-top: 20px; /* Adjust margin as needed */
+            max-width: 80%; /* Set maximum width for image */
+            display: block; /* Ensure image is displayed as block element */
+            margin-left: auto; /* Center image horizontally */
+            margin-right: auto; /* Center image horizontally */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Box shadow for 3D effect */
+        }
     </style>
 </head>
 <body>
@@ -112,6 +123,12 @@
 
         <!-- Display cleaned text -->
         <div>{{ cleaned_text }}</div>
+
+        {% if image_url %}
+            <div style="text-align: center;">
+                <img src="{{ image_url }}" alt="Article Image" class="article-image">
+            </div>
+        {% endif %}
 
         <!-- Display other details in a table -->
         <table border="1">
