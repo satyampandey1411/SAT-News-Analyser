@@ -139,6 +139,18 @@
             overflow-y: auto; /* Enable vertical scrolling */
             width: 100%; /* Ensure full width */
         }
+
+        
+        /* CSS for image */
+        .article-image {
+            margin-top: 20px; /* Adjust margin as needed */
+            max-width: 80%; /* Set maximum width for image */
+            display: block; /* Ensure image is displayed as block element */
+            margin-left: auto; /* Center image horizontally */
+            margin-right: auto; /* Center image horizontally */
+            border-radius: 10px; /* Rounded corners */
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Box shadow for 3D effect */
+        }
     </style>
     
     <title>Document</title>
@@ -152,11 +164,14 @@
 
         {% if cleaned_text %}
             <div class="cleaned-text">
+                {{ headlines }}
                 {{ cleaned_text | safe }}
             </div>
         {% endif %}
+    {% if image_url %}
+    <img class="article-image" src="{{ image_url }}" alt="Article Image">
+    {% endif %}
     </div>
-
     <form id="view-table-form" action="/table" method="GET">
     </form>
 
@@ -205,3 +220,4 @@
     
 </body>
 </html>
+
