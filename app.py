@@ -7,7 +7,9 @@ from flask_session import Session
 from datetime import datetime
 from newspaper import Article
 from bs4 import BeautifulSoup
+from textblob import TextBlob
 from unidecode import unidecode
+from datetime import datetime
 import requests
 import psycopg2
 import google
@@ -53,7 +55,8 @@ def create_table():
         news_agency TEXT,
         publish_date TEXT,
         reading_time TEXT,
-        date_time_read TIMESTAMP
+        date_time_read TIMESTAMP,
+        image_url TEXT
     );
     '''
     cursor.execute(create_table_query)
@@ -139,31 +142,30 @@ def logout():
     session.clear()
     return redirect(url_for('portal'))
 
-# Function to insert data into the PostgreSQL table only if cleaned_text is non-empty
 def insert_data(url, cleaned_text, sentence_count, word_count, link_count, upos_frequency,
                 headlines, keywords, tone_sentiment, genre, news_agency, publish_date,
-                reading_time, date_time_read):
-        insert_query = '''
-        INSERT INTO news_analysis (url, cleaned_text, sentence_count, word_count, link_count,
-                                    upos_frequency, headlines, keywords, tone_sentiment, genre,
-                                    news_agency, publish_date, reading_time, date_time_read)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
-        '''
-        record_to_insert = (url, cleaned_text, sentence_count, word_count, link_count, json.dumps(upos_frequency),
-                            headlines, keywords, tone_sentiment, genre, news_agency, publish_date,
-                            reading_time, date_time_read)
-        cursor.execute(insert_query, record_to_insert)
-        connection.commit()
-# Call the create_table function to ensure the table exists before inserting data
+                reading_time, date_time_read, image_url="Not found"):
+        if cleaned_text != "Not found":  # Check if cleaned_text is not "Not found"
+            insert_query = '''
+            INSERT INTO news_analysis (url, cleaned_text, sentence_count, word_count, link_count,
+                                        upos_frequency, headlines, keywords, tone_sentiment, genre,
+                                        news_agency, publish_date, reading_time, date_time_read, image_url)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+            '''
+            record_to_insert = (url, cleaned_text, sentence_count, word_count, link_count, json.dumps(upos_frequency),
+                                headlines, keywords, tone_sentiment, genre, news_agency, publish_date,
+                                reading_time, date_time_read, image_url)
+            cursor.execute(insert_query, record_to_insert)
+            connection.commit()
 create_table()
-
 def clean_text(text):
-    text = unidecode(text)  # Convert Unicode to ASCII
-    text = re.sub(r'(?<=[^\s\'"\(\[<{])\s*([.,!?;:])\s*', r'\1 ', text)  # Insert space after punctuation
-    text = re.sub(r'<!--\s*-->', ' ', text)  # Handle text separated by comment tags
-    text = re.sub(r'&#[0-9]+;', '', text)  # Remove ASCII codes
-    text = re.sub(r'\s+', ' ', text)  # Remove extra spaces
+    text = unidecode(text) 
+    text = re.sub(r'(?<=[^\s\'"\(\[<{])\s*([.,!?;:])\s*', r'\1 ', text)  
+    text = re.sub(r'<!--\s*-->', ' ', text)  
+    text = re.sub(r'&#[0-9]+;', '', text)  
+    text = re.sub(r'\s+', ' ', text)  
     return text.strip()
+
 
 def extract_and_clean_text(url):
     cleaned_text = ''
@@ -179,246 +181,270 @@ def extract_and_clean_text(url):
     publish_date = ""
     reading_time = ""
     date_time_read = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    image_url = None
 
-    # Fetching HTML content of the URL
     response = requests.get(url)
-
-    # Parsing HTML content using BeautifulSoup
     soup = BeautifulSoup(response.text, 'html.parser')
-#-----------------------------------------------------
-    # Check if the URL starts with "https://www.india"
-    if url.startswith("https://www.india"):
-        cleaned_text = extract_indian_text(url)
-    # Check if the URL starts with "https://indianexpress"
-    if url.startswith("https://indianexpress"):
-        cleaned_text = extract_indian_express_text(url)
+
+    text = get_text(url)
+    cleaned_text = clean_text(text)
+
+    article = Article(url)
+    article.download()
+    article.parse()
+    article.nlp() 
+    
+    # Extracting news information
+    headlines = article.title
+    publish_date = None
+
+    description = article.meta_data.get('og', {}).get('description', '')
+    match = re.search(r'^(.*?):', description)
+    genre = match.group(1).strip() if match else ""
+
+    # If genre is not found, assign the default value
+    if not genre:
+        genre = "Genre information not available"
+
+    if article.publish_date:
+        publish_date = article.publish_date.strftime("%Y-%m-%d %H:%M:%S")
     else:
-        # Find all elements with class="_s30J clearfix"
-        elements = soup.find_all(class_="_s30J clearfix")
+        # Extract publish date from scripts
+        scripts = soup.find_all('script')
+        for script in scripts:
+            script_text = script.get_text()
+            if '"datePublished"' in script_text:
+                try:
+                    script_json = json.loads(script_text)
+                    if 'datePublished' in script_json:
+                        publish_date = script_json['datePublished']
+                        break
+                except json.JSONDecodeError:
+                    pass
 
-        # Extracting text from elements
-        for element in elements:
-            # Extract text
-            text = ''.join([e for e in element.recursiveChildGenerator() if isinstance(e, str)])
-            
-            # Clean the text
-            text = clean_text(text)
-            
-            cleaned_text += text.strip() + '\n'
+# If publish_date is still None, set it to "Unknown"
+    if publish_date is None:
+        publish_date = "Unknown"
 
+
+
+    keywords = article.keywords
+    
+    # Extracting news agency from OG metadata
+    news_agency = article.meta_data.get('og', {}).get('site_name', "")          
+    
+    # Analyzing sentiment
+    blob = TextBlob(cleaned_text)
+    sentiment_score = blob.sentiment.polarity
+    if sentiment_score > 0:
+        tone_sentiment = "Positive"
+    elif sentiment_score < 0:
+        tone_sentiment = "Negative"
+    else:
+        tone_sentiment = "Neutral"
+    
+    # Counting valid links
+    link_count = 0
+    for link in soup.find_all('a', href=True):
+        if not link['href'].startswith('#') and not link['href'].startswith('http://redirect.website.com'):
+            link_count += 1
+    
+    
     # Counting sentences and words
     sentence_count = len(nltk.sent_tokenize(cleaned_text))
-
-    # Define a regular expression pattern to match words (excluding punctuation)
     pattern = r'\b\w+\b'
-
-    # Tokenize the text using the regular expression pattern
     word_list = re.findall(pattern, cleaned_text)
-
-    # Count the number of words
     word_count = len(word_list)
-
-    # Counting UPOS frequencies
     upos_tag_list = nltk.pos_tag(word_list, tagset='universal')
     for _, pos in upos_tag_list:
         if pos not in [",", ".", "?", "!"]:
             upos_frequency[pos] = upos_frequency.get(pos, 0) + 1
-
-    # Extract metadata using newspaper library
-    article = Article(url)
-    article.download()
-    article.parse()
-    article.nlp()
-    keywords = article.keywords
-    title = article.title
-    
-    # Extract genre of news
-        # Check if the URL starts with "https://www.india"
-    if url.startswith("https://www.india"):
-        genre = extract_indian_genre(url)
-    else:
-        description = article.meta_data.get('og', {}).get('description', '')
-        match = re.search(r'^(.*?):', description)
-        genre = match.group(1).strip() if match else ""
-
-    # Extract news agency
-    news_agency = article.meta_data.get('og', {}).get('site_name', "")
-
-    # Extract publish date
-    scripts = soup.find_all('script')
-    for script in scripts:
-        script_text = script.get_text()
-        if '"datePublished"' in script_text:
-            try:
-                script_json = json.loads(script_text)
-                if 'datePublished' in script_json:
-                    publish_date = script_json['datePublished']
-                    break
-            except json.JSONDecodeError:
-                pass
-
-    # Counting the number of links (excluding redirected links)
-    for link in soup.find_all('a', href=True):
-        if not link['href'].startswith('#') and not link['href'].startswith('http://redirect.website.com'):
-            link_count += 1
-
-    if url.startswith("https://www.india"):
-        headlines = extract_indian_headline(url)
-    # Check if the URL starts with "https://indianexpress"
-    if url.startswith("https://indianexpress"):
-        headlines = extract_indian_express_headline(url)
-    else:  
-        # Find the element with class "HNMDR"
-        heading_element = soup.find(class_="HNMDR")
-        # Extract heading text if found
-        if heading_element:
-            headlines = clean_text(heading_element.text)
-        else:
-            headlines = "Headline not found"
-
-    # Initialize VADER sentiment analyzer
-    sid = SentimentIntensityAnalyzer()
-
-    # Analyze sentiment using VADER
-    sentiment_scores = sid.polarity_scores(cleaned_text)
-    compound_score = sentiment_scores["compound"]
-    positive_score = sentiment_scores["pos"]
-    negative_score = sentiment_scores["neg"]
-
-    # Classify sentiment based on compound score and predefined thresholds
-    if compound_score > 0.1:
-        tone_sentiment = "Positive"
-    elif compound_score < -0.1:
-        tone_sentiment = "Negative"
-    else:
-        tone_sentiment = "Neutral"
-
-    # Calculate reading time
-    reading_time_seconds = (word_count / 200) * 60  # Assuming an average reading speed of 200 words per minute
+    reading_time_seconds = (word_count / 200) * 60  
     reading_time_minutes = math.floor(reading_time_seconds / 60)
     reading_time_seconds_remainder = math.floor((reading_time_seconds % 60) / 30) * 30
     reading_time = f"{reading_time_minutes} minute {reading_time_seconds_remainder} second"
 
+    image_url = extract_image_url(url)   
     # Insert data into the PostgreSQL table
     insert_data(url, cleaned_text, sentence_count, word_count, link_count, upos_frequency,
                 headlines, ", ".join(keywords), tone_sentiment,
-                genre, news_agency, publish_date, reading_time, date_time_read)
-
+                genre, news_agency, publish_date, reading_time, date_time_read, image_url)
+    
     return cleaned_text, sentence_count, word_count, link_count, upos_frequency, \
            headlines, ", ".join(keywords), tone_sentiment, \
-           genre, news_agency, publish_date, reading_time, date_time_read
+           genre, news_agency, publish_date, reading_time, date_time_read, image_url
 
-def extract_indian_text(url):
-    cleaned_text = ""
 
-    # Check if the URL starts with "https://www.india"
-    if url.startswith("https://www.india"):
+
+
+
+
+def get_text(url):
+    try:
         response = requests.get(url)
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Find the main content section by its class
-        main_content = soup.find(class_="Story_description__fq_4S")
-
-        # Find all <p> tags within the main content section
-        paragraphs = main_content.find_all('p')
-
-        # Extract text from each <p> tag and append it to cleaned_text
-        for p in paragraphs:
-            text = p.get_text(strip=True)
-            if "Published By" in text:
-                break  # Stop appending text once "Published By" section is encountered
-            cleaned_text += text + '\n'
-
-    return cleaned_text.strip()
-
-def extract_indian_headline(url):
-    headlines = ""
-
-    # Check if the URL starts with "https://www.india"
-    if url.startswith("https://www.india"):
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Find the element with the specified class for Indian news websites
-        headline_element = soup.find(class_="jsx-ace90f4eca22afc7 Story_strytitle__MYXmR")
-
-        # Extract the text from the headline element
-        headlines = headline_element.get_text(strip=True) if headline_element else "Headline not found"
-
-    return headlines
-
-
-
-def extract_indian_genre(url):
-    genre = "Not Found"
+        html_content = response.text
+        soup = BeautifulSoup(html_content, 'html.parser')
+        # Check if the URL starts with "ddnews"
+        if url.startswith("https://www.ddnews"):
+            element = soup.find(class_="news_content")
+            if element:
+                text = element.get_text(strip=True)
+                return text
+            else:
+                try:
+                    # Use newspaper library to extract article text
+                    article = Article(url)
+                    article.download()
+                    article.parse()
+                    return article.text
+                except Exception:
+                    return "Not found"
+        elif url.startswith("https://www.timesnownews"):
+            text = ""
+            class_names = ["QA-A P0ju _3RAT", "_1884"]
+            for class_name in class_names:
+                elements = soup.find_all(class_=class_name)
+                for element in elements:
+                    text += element.get_text(strip=True) + "\n"
+            if text:
+                return text.strip()  # Trim any leading or trailing whitespace
+            else:
+                try:
+                    # Use newspaper library to extract article text
+                    article = Article(url)
+                    article.download()
+                    article.parse()
+                    return article.text
+                except Exception:
+                    return "Not found"
+        elif url.startswith("https://www.indiatimes"):
+            div_element = soup.find('div', id="article-description-0")
+            if div_element:
+                text = div_element.get_text(strip=True)
+                return text
+            else:
+                try:
+                    # Use newspaper library to extract article text
+                    article = Article(url)
+                    article.download()
+                    article.parse()
+                    return article.text
+                except Exception:
+                    return "Not found"       
+        elif url.startswith("https://www.thehindu"):
+            text = ''
+            div_element = soup.find('div', class_="articlebodycontent")
+            if div_element:
+                paragraphs = div_element.find_all('p')
+                for paragraph in paragraphs:
+                    text += paragraph.get_text(separator='\n', strip=True) + '\n'
+                last_full_stop_index = text.rfind('.')
+                if last_full_stop_index != -1:
+                    text = text[:last_full_stop_index + 1]
+                return text         
+            else:
+                try:
+                        # Use newspaper library to extract article text
+                    article = Article(url)
+                    article.download()
+                    article.parse()
+                    return article.text
+                except Exception:
+                    return "Not found"   
+        elif url.startswith("https://www.bbc"):
+            div_element = soup.find('div', class_="ssrcss-1s1kjo7-RichTextContainer e5tfeyi1")
+            if div_element:
+                text = div_element.get_text(separator='\n', strip=True)
+                return text
+            else:
+                try:
+                    article = Article(url)
+                    article.download()
+                    article.parse()
+                    return article.text
+                except Exception:
+                    return "Not found"  
+        elif url.startswith("https://www.cnbc"):
+            article_body_div = soup.find('div', class_='ArticleBody-articleBody')
+            if article_body_div:
+                paragraphs = article_body_div.find_all('p')
+                text = '\n'.join(paragraph.get_text(strip=True) for paragraph in paragraphs)
+                return text
+            else:
+                try:
+                    article = Article(url)
+                    article.download()
+                    article.parse()
+                    return article.text
+                except Exception:
+                    return "Not found"  
+        elif url.startswith("https://timesofindia"):
+            text = ""
+            elements = soup.find_all(class_="_s30J clearfix")
+            for element in elements:
+                text += ''.join([e for e in element.recursiveChildGenerator() if isinstance(e, str)])
+                text = clean_text(text) 
+                text += text.strip() + '\n'
+            if element :
+                return text
+            else :
+                try:
+                    article = Article(url)
+                    article.download()
+                    article.parse()
+                    return article.text
+                except Exception:
+                    return "Not found"  
+        elif url.startswith("https://indianexpress"):
+            text = ""
+            story_details_elements = soup.find_all(class_="story_details")
+            for element in story_details_elements:
+                text += element.get_text(strip=True) + "\n"
+            if text :
+                return text 
+            else:
+                try:
+                    article = Article(url)
+                    article.download()
+                    article.parse()
+                    return article.text
+                except Exception:
+                    return "Not found" 
+        elif url.startswith("https://www.india"):
+            text = ""
+            main_content = soup.find(class_="Story_description__fq_4S")
+            if main_content:
+                paragraphs = main_content.find_all('p')
+                for p in paragraphs:
+                    paragraph_text = p.get_text(strip=True)
+                    if "Published By" in paragraph_text:
+                        break
+                    text += paragraph_text + '\n'
+                return text
+            else:
+                try:
+                    article = Article(url)
+                    article.download()
+                    article.parse()
+                    return article.text
+                except Exception:
+                    return "Not found" 
+        else :
+            try:
+                article = Article(url)
+                article.download()
+                article.parse()
+                return article.text
+            except Exception:
+                return "Not found"                  
+    except Exception:
+        return "Not found"
+    
+def extract_image_url(url):
     article = Article(url)
     article.download()
     article.parse()
-    article.nlp()
-    keywords = article.keywords
-    # Check if the URL starts with "https://www.india"
-    if url.startswith("https://www.india"):
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Find all <li> tags with the specified class for Indian news websites
-        li_tags = soup.find_all('li', class_="jsx-45032f3fea125779")
-
-        genre_list = []
-
-        # Iterate over each <li> tag
-        for li_tag in li_tags:
-            # Find the <a> tag within the <li> tag
-            a_tag = li_tag.find('a', class_="jsx-45032f3fea125779")
-            # Check if the <a> tag has a 'title' attribute
-            if a_tag and a_tag.get('title'):
-                # Extract the value of the 'title' attribute
-                title = a_tag['title']
-                # Append the title to the list
-                genre_list.append(title)
-
-        # Match the genre with the keyword list
-        for keyword in keywords:
-            if keyword in genre_list:
-                genre = keyword
-                break
-
-    return genre
-
-
-def extract_indian_express_text(url):
-    cleaned_text = ""
-
-    # Check if the URL starts with "https://indianexpress"
-    if url.startswith("https://indianexpress"):
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Find all elements with class="story_details"
-        story_details_elements = soup.find_all(class_="story_details")
-
-        # Extract text from each element and append it to cleaned_text
-        for element in story_details_elements:
-            cleaned_text += element.get_text(strip=True) + "\n"
-
-    return cleaned_text
-
-
-def extract_indian_express_headline(url):
-    headlines = "Headline not found"
-
-    # Check if the URL starts with "https://indianexpress"
-    if url.startswith("https://indianexpress"):
-        response = requests.get(url)
-        soup = BeautifulSoup(response.text, 'html.parser')
-
-        # Find the element with class="native_story_title"
-        headline_element = soup.find(class_="native_story_title")
-
-        # Extract the text from the headline element
-        headlines = headline_element.get_text(strip=True) if headline_element else "Headline not found"
-
-    return headlines
+    return article.top_image
 
 @app.route("/", methods=('POST','GET'))
 def portal():
@@ -436,28 +462,37 @@ def portal():
     publish_date = ""
     reading_time = ""
     date_time_read = ""
+    
 
     if request.method == "POST":
         url = request.form["url"]
         cleaned_text, sentence_count, word_count, link_count, upos_frequency, \
         headlines, keywords, tone_sentiment, genre, news_agency, publish_date, reading_time, date_time_read = extract_and_clean_text(url)
-
+        if cleaned_text == "Not found":
+            return render_template('notfetch.html')
     return render_template('index.html')
 
 @app.route("/extract_text", methods=['POST'])
 def extract_text():
     url = request.form['url']
-    cleaned_text, sentence_count, word_count, link_count, upos_frequency, \
-    headlines, keywords, tone_sentiment, genre, news_agency, publish_date, reading_time, date_time_read = extract_and_clean_text(url)
-    
+    if not url:  # Check if URL is empty
+        return render_template('index.html')
+    try:
+        cleaned_text, sentence_count, word_count, link_count, upos_frequency, \
+        headlines, keywords, tone_sentiment, genre, news_agency, publish_date, reading_time, date_time_read, image_url = extract_and_clean_text(url)
+        
+        # Extracting image URL
+        image_url = extract_image_url(url)
 
+        return render_template('content.html', url=url, cleaned_text=cleaned_text,
+                            sentence_count=sentence_count, word_count=word_count,
+                            link_count=link_count, upos_frequency=upos_frequency,
+                            headlines=headlines, keywords=keywords, tone_sentiment=tone_sentiment,
+                            genre=genre, news_agency=news_agency, publish_date=publish_date,
+                            reading_time=reading_time, date_time_read=date_time_read, image_url = image_url)
+    except Exception:
+        return render_template('notfetch.html')
 
-    return render_template('content.html', url=url, cleaned_text=cleaned_text,
-                        sentence_count=sentence_count, word_count=word_count,
-                        link_count=link_count, upos_frequency=upos_frequency,
-                        headlines=headlines, keywords=keywords, tone_sentiment=tone_sentiment,
-                        genre=genre, news_agency=news_agency, publish_date=publish_date,
-                        reading_time=reading_time, date_time_read=date_time_read)
 
 @app.route("/table", methods=['GET'])
 def table_view():
@@ -480,6 +515,7 @@ def table_view():
     publish_date = data[12]
     reading_time = data[13]
     date_time_read = data[14]
+    image_url = data[15]
 
     return render_template("analysis.html", 
                            url=url,
@@ -495,7 +531,8 @@ def table_view():
                            news_agency=news_agency, 
                            publish_date=publish_date,
                            reading_time=reading_time, 
-                           date_time_read=date_time_read)
+                           date_time_read=date_time_read,
+                           image_url=image_url)
 
 @app.route("/history")
 def history():
@@ -520,9 +557,6 @@ def view_details():
     details = cursor.fetchone()
 
     return render_template("details.html", details=details)
-
-
-
 
 if __name__ == "__main__":
     app.run(debug=True)
