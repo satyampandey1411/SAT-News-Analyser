@@ -10,7 +10,6 @@ from bs4 import BeautifulSoup
 from textblob import TextBlob
 from unidecode import unidecode
 from datetime import datetime
-import pytz
 import requests
 import psycopg2
 import google
@@ -143,31 +142,21 @@ def logout():
     session.clear()
     return redirect(url_for('portal'))
 
-# Function to insert data into PostgreSQL table
 def insert_data(url, cleaned_text, sentence_count, word_count, link_count, upos_frequency,
                 headlines, keywords, tone_sentiment, genre, news_agency, publish_date,
-                reading_time, date_time_read, image_url):
-    # Check if cleaned_text is not "Not found"
-    insert_query = '''
-    INSERT INTO news_analysis (url, cleaned_text, sentence_count, word_count, link_count,
-                                upos_frequency, headlines, keywords, tone_sentiment, genre,
-                                news_agency, publish_date, reading_time, date_time_read, image_url)
-    VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
-    '''
-    
-    # Convert date_time_read to IST
-    ist_timezone = pytz.timezone('Asia/Kolkata')
-    date_time_read_ist = datetime.now(tz=ist_timezone).strftime("%Y-%m-%d %H:%M:%S")
-
-    # Handle the case where publish_date is "Unknown"
-    if publish_date == "Unknown":
-        publish_date = None
-
-    record_to_insert = (url, cleaned_text, sentence_count, word_count, link_count, json.dumps(upos_frequency),
-                        headlines, keywords, tone_sentiment, genre, news_agency, publish_date,
-                        reading_time, date_time_read_ist, image_url)
-    cursor.execute(insert_query, record_to_insert)
-    connection.commit()
+                reading_time, date_time_read, image_url="Not found"):
+        if cleaned_text != "Not found":  # Check if cleaned_text is not "Not found"
+            insert_query = '''
+            INSERT INTO news_analyser (url, cleaned_text, sentence_count, word_count, link_count,
+                                        upos_frequency, headlines, keywords, tone_sentiment, genre,
+                                        news_agency, publish_date, reading_time, date_time_read, image_url)
+            VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s);
+            '''
+            record_to_insert = (url, cleaned_text, sentence_count, word_count, link_count, json.dumps(upos_frequency),
+                                headlines, keywords, tone_sentiment, genre, news_agency, publish_date,
+                                reading_time, date_time_read, image_url)
+            cursor.execute(insert_query, record_to_insert)
+            connection.commit()
 create_table()
 def clean_text(text):
     text = unidecode(text) 
@@ -571,3 +560,4 @@ def view_details():
 
 if __name__ == "__main__":
     app.run(debug=True)
+
