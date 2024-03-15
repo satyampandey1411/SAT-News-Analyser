@@ -259,7 +259,7 @@ def extract_and_clean_text(url):
     for _, pos in upos_tag_list:
         if pos not in [",", ".", "?", "!"]:
             upos_frequency[pos] = upos_frequency.get(pos, 0) + 1
-    reading_time_seconds = (word_count / 200) * 60  
+    reading_time_seconds = (word_count / 150) * 60  
     reading_time_minutes = math.floor(reading_time_seconds / 60)
     reading_time_seconds_remainder = math.floor((reading_time_seconds % 60) / 30) * 30
     reading_time = f"{reading_time_minutes} minute {reading_time_seconds_remainder} second"
