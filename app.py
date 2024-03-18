@@ -514,7 +514,7 @@ def extract_text():
 @app.route("/table", methods=['GET'])
 def table_view():
     # Fetch data from the PostgreSQL table
-    cursor.execute("SELECT * FROM newss_analyser ORDER BY id DESC LIMIT 1")
+    cursor.execute("SELECT * FROM news_analyser ORDER BY id DESC LIMIT 1")
     data = cursor.fetchone()  # Assuming you have only one row for now
 
     # Extracting data from the fetched row
@@ -554,7 +554,7 @@ def table_view():
 @app.route("/history")
 def history():
     # Fetch URL, sentence count, word count, and stop word count from the news_analysis table
-    cursor.execute("SELECT url, date_time_read, news_agency, publish_date FROM newss_analyser ORDER BY id DESC")
+    cursor.execute("SELECT url, date_time_read, news_agency, publish_date FROM news_analyser ORDER BY id DESC")
     records = cursor.fetchall()
 
     return render_template("history.html", records=records)
@@ -570,7 +570,7 @@ def view_details():
     date_time_read = request.args.get('date_time_read')
     
     # Fetch all details for the provided URL and date_time_read
-    cursor.execute("SELECT * FROM newss_analyser WHERE url = %s AND date_time_read = %s", (url, date_time_read,))
+    cursor.execute("SELECT * FROM news_analyser WHERE url = %s AND date_time_read = %s", (url, date_time_read,))
     details = cursor.fetchone()
 
     return render_template("details.html", details=details)
