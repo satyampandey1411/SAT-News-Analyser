@@ -6,19 +6,34 @@
 <title>Content</title>
 <link rel="icon" href="/static/fevicon.png" type="image/x-icon"> <!-- Add this line for favicon -->
 <style>
+        /* CSS for header */
+        .header {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            background: linear-gradient(to right, #e96443, #904e95);
+            color: white;
+            padding: 30px 0; /* Increase padding to create space between content and footer */
+            text-align: center;
+            z-index: 999; /* Ensure the header is above other content */
+        }
+
         /* CSS for footer */
         .footer {
             position: fixed;
             bottom: 0;
             left: 0;
             width: 100%;
-            background: linear-gradient(to right, #e96443, #904e95); /* Gradient background */
+            background: linear-gradient(to right, #e96443, #904e95);
             color: white;
-            padding: 10px 0;
+            padding: 20px 0; /* Increase padding to create space between content and footer */
             text-align: center;
+            z-index: 999; /* Ensure the footer is above other content */
         }
     
         /* CSS for cleaned text */
+/* CSS for cleaned text */
         .cleaned-text {
             line-height: 2.0;
             text-align: justify;
@@ -30,7 +45,9 @@
             box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Box shadow for 3D effect */
             color: white; /* Text color */
             overflow: hidden; /* Hide scrollbar */
+            font-size: 18px; /* Increase font size */
         }
+
 
         /* Paragraph CSS */
         .cleaned-text p {
@@ -39,19 +56,23 @@
         }
         
         /* CSS for the box */
-        .box {
-            margin: 20px 10px; /* Decreased margin on both sides */
-            background: linear-gradient(to right, #4378e9, #614e95); /* Gradient background */
-            border: 1px solid rgba(255, 255, 255, 0.3); /* Border color with transparency */
-            border-radius: 10px; /* Rounded corners */
-            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5); /* Box shadow for 3D effect */
-            overflow-y: auto; /* Add vertical scroll if content exceeds box height */
-            color: white; /* Text color */
+        /* New CSS for body */
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+            background: linear-gradient(to right, #4378e9, #614e95);
+            /* Change these color codes to your desired gradient */
+            color: white;
         }
     
         /* CSS for speech button */
         .speech-button {
-            position: fixed;
+            position: absolute;
             top: 20px;
             right: 10px;
             padding: 10px 20px;
@@ -72,8 +93,8 @@
     
         /* CSS for view table button */
         .view-table-button {
-            position: fixed;
-            top: 10px;
+            position: absolute;
+            top: 20px;
             left: 10px;
             padding: 10px 20px;
             background: linear-gradient(to right, #e96443, #904e95); /* Gradient background */
@@ -93,8 +114,8 @@
 
         /* Adjust the position of the Home Page button */
         .home-button {
-            position: fixed;
-            top: 10px;
+            position: absolute;
+            top: 20px;
             left: 50%; /* Center the button horizontally */
             transform: translateX(-50%); /* Move the button to the left by half of its width */
             padding: 10px 20px;
@@ -113,32 +134,21 @@
             background: linear-gradient(to right, #f85b00, #e53935); /* Gradient hover background */
         }
 
-        /* New CSS for body */
-        body {
-            margin: 0;
-            padding: 0;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            height: 100vh;
-            background: linear-gradient(to right, #4378e9, #614e95);
-            /* Change these color codes to your desired gradient */
-            color: white;
-        }
-        
         /* CSS for headline */
         .headline {
-            margin-top: 50px; /* Adjust the margin to create space between headline and buttons */
+            margin-top: 100px; /* Adjust the margin to create space between headline and buttons */
             text-align: center;
         }
 
         /* Make the body scrollable */
         .body-container {
-            flex: 1; /* Grow to fill remaining space */
-            overflow-y: auto; /* Enable vertical scrolling */
-            width: 100%; /* Ensure full width */
+            flex: 1;
+            overflow-y: auto;
+            width: 100%;
+            padding-top: 00px; /* Adjust padding to create space for the header */
+            padding-bottom: 100px; /* Adjusted padding to reduce space for the footer */
         }
+
 
         
         /* CSS for image */
@@ -156,33 +166,34 @@
     <title>Document</title>
 </head>
 <body>
+    <div class="header">
+        <button class="view-table-button" onclick="location.href='/table'">Detailed Analysis</button>
+        <button class="home-button" onclick="location.href='/'">Home Page</button>
+        <button class="speech-button">🔊</button>
+    </div>
 
     <div class="body-container">
         {% if headlines %}
             <h2 class="headline">{{ headlines }}</h2>
         {% endif %}
 
+        {% if image_url %}
+            <img class="article-image" src="{{ image_url }}" alt="Article Image">
+        {% endif %}
+
         {% if cleaned_text %}
             <div class="cleaned-text">
-                {{ headlines }}
                 {{ cleaned_text | safe }}
             </div>
         {% endif %}
-    {% if image_url %}
-    <img class="article-image" src="{{ image_url }}" alt="Article Image">
-    {% endif %}
     </div>
+
     <form id="view-table-form" action="/table" method="GET">
     </form>
 
     <div class="footer">
         &copy; 2024 SAT News Analyser
     </div>
-
-    <button class="speech-button">🔊</button>
-    <button class="view-table-button" onclick="location.href='/table'">Detailed Analysis</button>
-    <button class="home-button" onclick="location.href='/'">Home Page</button>
-    
 
     <script>
         document.addEventListener("DOMContentLoaded", function() {
@@ -220,4 +231,53 @@
     
 </body>
 </html>
+
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            // Check if Speech Synthesis is supported
+            if ('speechSynthesis' in window) {
+                var isSpeaking = false;
+                var speechSynth = window.speechSynthesis;
+                var speechText = document.querySelector('.cleaned-text').innerText;
+
+                console.log("Speech text:", speechText); // Check if speechText contains the expected content
+
+                function toggleSpeech() {
+                    console.log("Toggle speech called."); // Check if the function is being called
+                    if (!isSpeaking) {
+                        var speechUtterance = new SpeechSynthesisUtterance(speechText);
+                        speechUtterance.rate = 1.5; // Change the rate to 1.5 (example value)
+                        speechSynth.speak(speechUtterance);
+                        isSpeaking = true;
+                        console.log("Speaking...");
+                    } else {
+                        speechSynth.cancel();
+                        isSpeaking = false;
+                        console.log("Stopped speaking.");
+                    }
+                }
+
+                document.querySelector('.speech-button').addEventListener('click', toggleSpeech);
+
+                // Automatically stop speech synthesis when navigating away from the page
+                window.addEventListener('beforeunload', function() {
+                    if (isSpeaking) {
+                        speechSynth.cancel();
+                        console.log("Speech synthesis stopped before navigating away.");
+                    }
+                });
+            } else {
+                // Speech Synthesis not supported, handle accordingly
+                console.log("Speech Synthesis is not supported in this browser.");
+            }
+        });
+
+    </script>
+    
+    
+</body>
+</html>
+
+
 
