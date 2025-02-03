@@ -91,7 +91,7 @@ python3 app.py          # On Windows, use python -m venv venv
 - DD News
 - Times Now
 - India Times
-- The Hindu# SAT-News-Analyser
+- The Hindu
 - BBC
 - CNBC
 - Times of India
