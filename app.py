@@ -38,8 +38,7 @@ connection = psycopg2.connect(
     database="sat_news_analyser",
     user="sat_news_analyser_user",
     password="pLL1BDW9WJ0dVsFOq4jQnosOhBuOdMIa",
-    host="dpg-d0cj1e0dl3ps73e8efg0-a.oregon-postgres.render.com",
-    port="5432"
+    host="dpg-d0cj1e0dl3ps73e8efg0-a.oregon-postgres.render.com"
 )
 
 # Create a cursor object to execute PostgreSQL commands
