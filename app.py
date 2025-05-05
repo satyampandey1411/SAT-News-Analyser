@@ -27,11 +27,19 @@ app.secret_key = 'hello'
 
 
 # Establish connection to the PostgreSQL database
+# connection = psycopg2.connect(
+#     user="satyam",
+#     password="rXi4WDQKlyUiN2pTFNBdiCDtkeZYo4pD",
+#     host="dpg-cnmr0li1hbls739i3800-a",
+#     database="dhp2024_zevw"
+# )
+
 connection = psycopg2.connect(
-    user="satyam",
-    password="rXi4WDQKlyUiN2pTFNBdiCDtkeZYo4pD",
-    host="dpg-cnmr0li1hbls739i3800-a",
-    database="dhp2024_zevw"
+    database="sat_news_analyser",
+    user="sat_news_analyser_user",
+    password="pLL1BDW9WJ0dVsFOq4jQnosOhBuOdMIa",
+    host="dpg-d0cj1e0dl3ps73e8efg0-a.oregon-postgres.render.com",
+    port="5432"
 )
 
 # Create a cursor object to execute PostgreSQL commands
